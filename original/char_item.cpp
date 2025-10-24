@@ -47,47 +47,11 @@
 #include "DragonSoul.h"
 #include "buff_on_attributes.h"
 #include "belt_inventory_helper.h"
-#include "belt_inventory_helper.h"
-
-#ifdef ENABLE_SWITCHBOT
-#include "new_switchbot.h"
-#endif
 #include "../../common/CommonDefines.h"
-case DRAGON_SOUL_INVENTORY:
-#ifdef ENABLE_SWITCHBOT
-case SWITCHBOT:
-{
-LPITEM pOld = m_pointsInstant.pSwitchbotItems[wCell];
-if (pItem && pOld)
-{
-return;
-}
-
-if (wCell >= SWITCHBOT_SLOT_COUNT)
-{
-sys_err("CHARACTER::SetItem: invalid switchbot item cell %d", wCell);
-return;
-}
-
-if (pItem)
-{
-CSwitchbotManager::Instance().RegisterItem(GetPlayerID(), pItem->GetID(), wCell);
-}
-else
-{
-CSwitchbotManager::Instance().UnregisterItem(GetPlayerID(), wCell);
-}
-
-m_pointsInstant.pSwitchbotItems[wCell] = pItem;
-}
-break;
-#endif
 #include "PetSystem.h"
 
 #ifdef ENABLE_IKASHOP_RENEWAL
 #	ifdef EXTEND_IKASHOP_ULTIMATE
-void CHARACTER::ClearItem()
-{
 #include "ikarus_shop_manager.h"
 #	endif
 #endif
@@ -273,9 +237,46 @@ bool CHARACTER::CanHandleItem(bool bSkipCheckRefine, bool bSkipObserver)
 
 LPITEM CHARACTER::GetInventoryItem(WORD wCell) const
 {
+    case DRAGON_SOUL_INVENTORY:
+#ifdef ENABLE_SWITCHBOT
+    case SWITCHBOT:
+    {
+    LPITEM pOld = m_pointsInstant.pSwitchbotItems[wCell];
+    if (pItem && pOld)
+    {
+    return;
+    }
+
+    if (wCell >= SWITCHBOT_SLOT_COUNT)
+    {
+    sys_err("CHARACTER::SetItem: invalid switchbot item cell %d", wCell);
+    return;
+    }
+
+    if (pItem)
+    {
+    CSwitchbotManager::Instance().RegisterItem(GetPlayerID(), pItem->GetID(), wCell);
+    }
+    else
+    {
+    CSwitchbotManager::Instance().UnregisterItem(GetPlayerID(), wCell);
+    }
+
+    m_pointsInstant.pSwitchbotItems[wCell] = pItem;
+    }
+    break;
+#endif
 	return GetItem(TItemPos(INVENTORY, wCell));
 }
 LPITEM CHARACTER::GetItem(TItemPos Cell) const
+case DRAGON_SOUL_INVENTORY:
+pItem->SetWindow(DRAGON_SOUL_INVENTORY);
+break;
+#ifdef ENABLE_SWITCHBOT
+case SWITCHBOT:
+pItem->SetWindow(SWITCHBOT);
+break;
+#endif		
 {
 	if (!m_PlayerSlots)
 		return nullptr;
@@ -5705,6 +5706,25 @@ bool CHARACTER::DropCheque(int cheque)
 
 bool CHARACTER::IsValidItemPosition(TItemPos Pos) const
 {
+if (DestCell.IsBeltInventoryPosition() && false == CBeltInventoryHelper::CanMoveIntoBeltInventory(item))
+{
+ChatPacket(CHAT_TYPE_INFO, LC_TEXT("이 아이템은 벨트 인벤토리로 옮길 수 없습니다."));			
+return false;
+}
+
+#ifdef ENABLE_SWITCHBOT
+if (Cell.IsSwitchbotPosition() && CSwitchbotManager::Instance().IsActive(GetPlayerID(), Cell.cell))
+{
+ChatPacket(CHAT_TYPE_INFO, LC_TEXT("Cannot move active switchbot item."));
+return false;
+}
+
+if (DestCell.IsSwitchbotPosition() && !SwitchbotHelper::IsValidItem(item))
+{
+ChatPacket(CHAT_TYPE_INFO, LC_TEXT("Invalid item type for switchbot."));
+return false;
+}
+#endif
 bool CHARACTER::MoveItem(TItemPos Cell, TItemPos DestCell, BYTE count)
 {
 	if (Cell.IsSamePosition(DestCell)) // @fixme196 (check same slot n same window aliases)

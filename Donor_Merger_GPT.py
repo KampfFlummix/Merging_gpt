@@ -2,8 +2,23 @@
 # -*- coding: utf-8 -*-
 """
 Donor_Merger_GPT.py
-Final: Adds --force and --show-skipped to control duplicate behavior and debug skipped blocks.
-Place next to donor/ original/ backup and run in your venv.
+Final, robust: Donor -> Original merger for Metin2 codebases.
+
+Usage examples:
+  dry-run verbose single file:
+    python Donor_Merger_GPT.py --dry-run --verbose --show-skipped --file char_item.cpp
+
+  real run (all donor files):
+    python Donor_Merger_GPT.py
+
+Flags:
+  --donor, --orig, --backup : optional paths (resolved relative to script)
+  --file                    : single filename to merge
+  --dry-run                 : don't write, only log what WOULD be done
+  --verbose                 : more logging
+  --show-skipped            : show details for skipped blocks
+  --force                   : force insert even if duplicate detected
+  --strict                  : use strict duplicate detection (default is relaxed)
 """
 from __future__ import annotations
 import os
@@ -18,7 +33,7 @@ from typing import List, Tuple, Optional, Dict, Any
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ----------------- Logging -----------------
+# ---------- Logging ----------
 LOGFILE = os.path.join(BASE_DIR, "merger_debug.log")
 os.makedirs(os.path.dirname(LOGFILE), exist_ok=True)
 logging.basicConfig(
@@ -28,16 +43,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger("DonorMerger")
 
-# ----------------- Config -----------------
+# ---------- Config ----------
 CONTEXT_LINES = 8
 BACKWARD_CODE_LINES = 8
 FUZZY_THRESHOLD = 0.55
 ENCODINGS_TRY = ["utf-8", "cp949", "euc-kr", "latin-1", "cp1252"]
 SUPPORTED_EXTS = (".cpp", ".c", ".h", ".hpp", ".txt")
-PLACEHOLDERS = [r'\[\.\]', r'\[\.\.\.\]', r'/\*\s*\[\.\]\s*\*/', r'/\*\s*\[\.\.\.\]\s*\*/', r'\.\.\.']
+PLACEHOLDERS = [
+    r'\[\.\]', r'\[\.\.\.\]',                       # [.] , [...]
+    r'/\*\s*\[\.\]\s*\*/', r'/\*\s*\[\.\.\.\]\s*\*/', # /*[...]*/ variants
+    r'\.\.\.'                                       # ...
+]
 PLACEHOLDER_RE = re.compile('|'.join(PLACEHOLDERS))
 
-# ----------------- IO Helpers -----------------
+# ---------- IO helpers ----------
 def try_read_file(path: str) -> Tuple[Optional[str], Optional[str]]:
     for enc in ENCODINGS_TRY:
         try:
@@ -49,7 +68,7 @@ def try_read_file(path: str) -> Tuple[Optional[str], Optional[str]]:
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read(), "utf-8-replace"
     except Exception as e:
-        logger.exception(f"Fehler beim Lesen {path}: {e}")
+        logger.exception(f"Unable to read {path}: {e}")
         return None, None
 
 def write_atomic(path: str, text: str, encoding: str = "utf-8"):
@@ -62,16 +81,15 @@ def make_backup(orig_path: str, backup_dir: str) -> Optional[str]:
     try:
         os.makedirs(backup_dir, exist_ok=True)
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        base = os.path.basename(orig_path)
-        dest = os.path.join(backup_dir, f"{base}.bak.{ts}")
+        dest = os.path.join(backup_dir, f"{os.path.basename(orig_path)}.bak.{ts}")
         shutil.copy2(orig_path, dest)
-        logger.info(f"Backup erstellt: {dest}")
+        logger.info(f"Backup created: {dest}")
         return dest
     except Exception as e:
-        logger.exception(f"Backup fehlgeschlagen für {orig_path}: {e}")
+        logger.exception(f"Backup failed for {orig_path}: {e}")
         return None
 
-# ----------------- Normalization & Regex -----------------
+# ---------- normalization / regex ----------
 def strip_inline_comments(line: str) -> str:
     s = re.sub(r'//.*$', '', line)
     s = re.sub(r'/\*.*?\*/', '', s)
@@ -79,7 +97,7 @@ def strip_inline_comments(line: str) -> str:
 
 def normalize_for_search(line: str) -> str:
     s = strip_inline_comments(line)
-    s = s.replace('{', ' ').replace('}', ' ').replace('(', ' ').replace(')', ' ')
+    s = s.replace('{',' ').replace('}',' ').replace('(',' ').replace(')',' ')
     s = re.sub(r'\s+', ' ', s).strip()
     return s.lower()
 
@@ -88,57 +106,56 @@ def build_flexible_regex_from_line(line: str) -> str:
     tokens = [re.escape(t) for t in nl.split()]
     if not tokens:
         return r'.*'
-    pattern = r'\b' + r'\s+'.join(tokens) + r'\b'
-    pattern = pattern.rstrip(r'\b') + r'(?:\s*[:{]\s*)?'
-    return pattern
+    pat = r'\b' + r'\s+'.join(tokens) + r'\b'
+    pat = pat.rstrip(r'\b') + r'(?:\s*[:{]\s*)?'
+    return pat
 
-# ----------------- Indentation & Preprocessor -----------------
+# ---------- indentation / preprocessor ----------
 def preserve_indentation(reference_line: Optional[str], code_block: List[str]) -> List[str]:
     ref_indent = ''
-    if reference_line is not None:
+    if reference_line:
         m = re.match(r'^(\s*)', reference_line)
         if m:
             ref_indent = m.group(1)
     indent_unit = '\t' if '\t' in ref_indent else ' ' * 4
-    increase = 0
-    if reference_line and reference_line.rstrip().endswith('{'):
-        increase = 1
-    base_indent = ref_indent + (indent_unit * increase)
-    indented = []
-    for line in code_block:
-        if line.strip() == '':
-            indented.append(line)
+    increase = 1 if reference_line and reference_line.rstrip().endswith('{') else 0
+    base = ref_indent + indent_unit * increase
+    out = []
+    for ln in code_block:
+        if ln.strip() == '':
+            out.append(ln)
             continue
-        stripped = line.lstrip()
+        stripped = ln.lstrip()
         if stripped.startswith('#'):
-            indented.append(stripped)
+            out.append(stripped)
         else:
-            indented.append(base_indent + stripped)
-    return indented
+            out.append(base + stripped)
+    return out
 
 def adjust_for_preprocessor(original_lines: List[str], insert_idx: int) -> int:
     stack = []
-    for i in range(0, min(insert_idx + 1, len(original_lines))):
+    for i in range(0, min(insert_idx+1, len(original_lines))):
         l = original_lines[i].strip()
         if re.match(r'#\s*ifn?def\b|#\s*if\b|#\s*ifdef\b', l):
-            stack.append((i, l))
+            stack.append(i)
         elif re.match(r'#\s*endif\b', l):
             if stack:
                 stack.pop()
     if stack:
-        last_open_idx = stack[-1][0]
-        return max(insert_idx, last_open_idx + 1)
+        last = stack[-1]
+        return max(insert_idx, last+1)
     return insert_idx
 
-# ----------------- Donor Parsing -----------------
+# ---------- donor parsing ----------
 def strip_blank_ends(lst: List[str]) -> List[str]:
-    while lst and (lst[0].strip() == ""):
+    while lst and lst[0].strip() == '':
         lst.pop(0)
-    while lst and (lst[-1].strip() == ""):
+    while lst and lst[-1].strip() == '':
         lst.pop()
     return lst
 
 def parse_donor_blocks(text: str) -> List[Tuple[List[str], List[str]]]:
+    """Return list of (context_before_lines, code_block_lines) for each placeholder."""
     lines = text.splitlines()
     blocks: List[Tuple[List[str], List[str]]] = []
     i = 0
@@ -151,32 +168,35 @@ def parse_donor_blocks(text: str) -> List[Tuple[List[str], List[str]]]:
             after = PLACEHOLDER_RE.sub('', lines[i]).strip()
             if after:
                 code_block.append(after)
-            paired_idx = None
+            # paired marker?
+            paired = None
             for k in range(i+1, min(N, i+300)):
                 if PLACEHOLDER_RE.search(lines[k]):
-                    paired_idx = k
+                    paired = k
                     break
-            if paired_idx:
-                for kk in range(i+1, paired_idx):
+            if paired:
+                for kk in range(i+1, paired):
                     code_block.append(lines[kk])
                 blocks.append((context_before, strip_blank_ends(code_block.copy())))
-                i = paired_idx + 1
+                i = paired + 1
                 continue
+            # capture contiguous non-empty following lines
             k = i + 1
             while k < N:
-                if lines[k].strip() == "":
+                if lines[k].strip() == '':
                     break
                 if PLACEHOLDER_RE.search(lines[k]):
                     break
                 code_block.append(lines[k])
                 k += 1
+            # fallback: if nothing after marker, try backward capture
             if not any(ln.strip() for ln in code_block):
                 back = []
                 b = i - 1
                 while b >= 0 and len(back) < BACKWARD_CODE_LINES:
                     if PLACEHOLDER_RE.search(lines[b]):
                         break
-                    if lines[b].strip() == "":
+                    if lines[b].strip() == '':
                         break
                     back.append(lines[b])
                     b -= 1
@@ -189,7 +209,7 @@ def parse_donor_blocks(text: str) -> List[Tuple[List[str], List[str]]]:
             i += 1
     return blocks
 
-# ----------------- Matching -----------------
+# ---------- matching ----------
 def find_insert_position_improved(original_lines: List[str], context_before: List[str]) -> int:
     if not context_before:
         return -1
@@ -223,9 +243,10 @@ def find_insert_position_improved(original_lines: List[str], context_before: Lis
     min_required = max(1, int(len(ctx_norm) * 1))
     if best_score >= min_required:
         return best_pos
+    # fuzzy fallback
     ctx_join = " || ".join(ctx_norm)
     n = len(ctx_norm)
-    for i in range(max(0, len(original_lines) - n + 1)):
+    for i in range(max(0, len(original_lines)-n+1)):
         window = " || ".join([normalize_for_search(l) for l in original_lines[i:i+n]])
         ratio = difflib.SequenceMatcher(None, ctx_join, window).ratio()
         if ratio > FUZZY_THRESHOLD:
@@ -236,8 +257,8 @@ def find_by_keyword_fallback(original_lines: List[str], code_block: List[str]) -
     if not code_block:
         return -1
     tokens = []
-    for line in code_block:
-        s = strip_inline_comments(line).strip()
+    for ln in code_block:
+        s = strip_inline_comments(ln).strip()
         if not s:
             continue
         m = re.match(r'\s*case\s+([A-Za-z0-9_]+)', s, flags=re.IGNORECASE)
@@ -254,8 +275,8 @@ def find_by_keyword_fallback(original_lines: List[str], code_block: List[str]) -
         score = 0
         for t in tokens:
             if t.startswith('case:'):
-                keyword = t.split(':', 1)[1]
-                if re.search(r'\bcase\s+' + re.escape(keyword) + r'\b', orig_line, flags=re.IGNORECASE):
+                kw = t.split(':',1)[1]
+                if re.search(r'\bcase\s+' + re.escape(kw) + r'\b', orig_line, flags=re.IGNORECASE):
                     score += 4
             else:
                 if re.search(r'\b' + re.escape(t) + r'\b', low):
@@ -274,13 +295,58 @@ def find_by_keyword_fallback(original_lines: List[str], code_block: List[str]) -
         return best_idx
     return -1
 
-# ----------------- Duplicate detection (returns details) -----------------
-def find_duplicate_nearby(out_lines: List[str], insert_idx: int, code_block: List[str], window: int = 8) -> Dict[str, Any]:
-    """
-    Returns dict:
-      { 'exists': bool, 'reason': str, 'matches': [ (line_idx, snippet) ... ] }
-    """
-    nonempty = [l for l in code_block if l.strip()]
+# ---------- duplicate detection ----------
+def find_duplicate_nearby_relaxed(out_lines: List[str], insert_idx: int, code_block: List[str], window: int = 8) -> Dict[str, Any]:
+    """Relaxed detection (default): single-line normalized eq, multi-line token overlap >=50% considered existing."""
+    nonempty = [ln for ln in code_block if ln.strip()]
+    result = {'exists': False, 'reason': '', 'matches': []}
+    if not nonempty:
+        return result
+    N = len(out_lines)
+    start = max(0, insert_idx - window)
+    end = min(N, insert_idx + window)
+    if len(nonempty) == 1:
+        target = re.sub(r'\s+',' ', strip_inline_comments(nonempty[0])).strip()
+        for i in range(start, end):
+            cand = re.sub(r'\s+',' ', strip_inline_comments(out_lines[i])).strip()
+            if cand == target:
+                result['exists'] = True
+                result['reason'] = 'single-line normalized exact'
+                result['matches'].append((i, out_lines[i].strip()))
+                return result
+        # collect substring hits for info
+        for i in range(start, end):
+            if target in out_lines[i]:
+                result['matches'].append((i, out_lines[i].strip()))
+        return result
+    # multi-line: token overlap
+    tokens_block = [t for ln in nonempty for t in re.findall(r'[A-Za-z0-9_]+', ln.lower())]
+    if not tokens_block:
+        return result
+    tokens_set = set(tokens_block)
+    window_len = max(1, len(nonempty))
+    for i in range(start, end):
+        window_lines = out_lines[i:i+window_len]
+        window_tokens = [t for ln in window_lines for t in re.findall(r'[A-Za-z0-9_]+', ln.lower())]
+        if not window_tokens:
+            continue
+        overlap = len(tokens_set.intersection(window_tokens)) / max(1, len(tokens_set))
+        if overlap >= 0.5:
+            result['exists'] = True
+            result['reason'] = f'multi-line token overlap {overlap:.2f}'
+            result['matches'].append((i, ' | '.join([ln.strip() for ln in window_lines])))
+            return result
+    # fallback: some substring matches
+    for i in range(start, end):
+        low = out_lines[i].lower()
+        hits = sum(1 for t in set(tokens_block) if t in low)
+        if hits:
+            result['matches'].append((i, out_lines[i].strip()))
+    return result
+
+def find_duplicate_nearby_strict(out_lines: List[str], insert_idx: int, code_block: List[str], window: int = 8) -> Dict[str, Any]:
+    """Strict detection: single-line exact equality, multi-line require 2-line consecutive exact match."""
+    nonempty = [ln for ln in code_block if ln.strip()]
     result = {'exists': False, 'reason': '', 'matches': []}
     if not nonempty:
         return result
@@ -295,115 +361,107 @@ def find_duplicate_nearby(out_lines: List[str], insert_idx: int, code_block: Lis
                 result['reason'] = 'single-line exact match'
                 result['matches'].append((i, out_lines[i].strip()))
                 return result
-        # try substring hits for info
-        for i in range(start, end):
-            if target in out_lines[i]:
-                result['matches'].append((i, out_lines[i].strip()))
         return result
-    # multi-line: search for 2-line consecutive exact match
     seqs = []
-    for i in range(len(nonempty) - 1):
+    for i in range(len(nonempty)-1):
         seqs.append((nonempty[i].strip(), nonempty[i+1].strip()))
     for i in range(start, max(start, end-1)):
         a = out_lines[i].strip()
         b = out_lines[i+1].strip() if i+1 < len(out_lines) else ""
-        for x, y in seqs:
+        for x,y in seqs:
             if a == x and b == y:
                 result['exists'] = True
                 result['reason'] = 'multi-line consecutive exact match'
                 result['matches'].append((i, f"{a} | {b}"))
                 return result
-    # not exact; collect some substring hits as info
-    for i in range(start, end):
-        low = out_lines[i].lower()
-        hits = sum(1 for t in set([w.lower() for w in nonempty]) if t and t in low)
-        if hits:
-            result['matches'].append((i, out_lines[i].strip()))
     return result
 
-# ----------------- Merge core -----------------
-def merge_one_file(donor_path: str, orig_path: str, backup_dir: str, dry_run: bool=False, verbose: bool=False, force: bool=False, show_skipped: bool=False) -> Tuple[int, int]:
-    logger.info(f"Verarbeite Donor: {donor_path} -> Original: {orig_path}")
+# ---------- merge core ----------
+def merge_one_file(donor_path: str, orig_path: str, backup_dir: str,
+                   dry_run: bool=False, verbose: bool=False, force: bool=False, strict: bool=False, show_skipped: bool=False) -> Tuple[int, int]:
+    logger.info(f"Process: Donor='{donor_path}' -> Original='{orig_path}'")
     donor_text, _ = try_read_file(donor_path)
     orig_text, orig_enc = try_read_file(orig_path)
     if donor_text is None or orig_text is None:
-        logger.error("Lesefehler; überspringe Datei.")
+        logger.error("Read error, skip file.")
         return 0, 0
     blocks = parse_donor_blocks(donor_text)
     total_blocks = len(blocks)
     inserted = 0
     if total_blocks == 0:
-        logger.info("Keine Platzhalter im Donor gefunden.")
+        logger.info("No placeholders in donor.")
         return 0, 0
     if not dry_run:
         make_backup(orig_path, backup_dir)
     out_lines = orig_text.splitlines()
     for idx, (context_before, code_block) in enumerate(blocks, start=1):
-        logger.info(f"Block {idx}/{total_blocks}: Code-Länge: {len(code_block)} Zeilen")
+        logger.info(f"Block {idx}/{total_blocks}: code-length={len(code_block)}")
         if not code_block:
-            logger.warning("Block ohne Code; überspringe.")
+            logger.warning("Empty code block -> skip")
             continue
         pos = find_insert_position_improved(out_lines, context_before)
         used_fallback = False
         if pos == -1:
-            if verbose: logger.info("Kontext-Matching fehlgeschlagen -> Keyword-Fallback")
+            if verbose: logger.info("Context match failed -> keyword fallback")
             pos = find_by_keyword_fallback(out_lines, code_block)
             used_fallback = True
         if pos == -1:
             if show_skipped:
-                logger.warning("Keine Einfügestelle gefunden — zeige Donor-Block (Vorschau):")
+                logger.warning("No insert position -> donor preview:")
                 for ln in (code_block[:6] if len(code_block)>6 else code_block):
                     logger.warning("  %s", ln.rstrip())
-            logger.warning("Block übersprungen (kein Match).")
+            logger.warning("Block skipped (no match).")
             continue
         insert_idx = pos + 1
         insert_idx = adjust_for_preprocessor(out_lines, insert_idx)
-        dup_info = find_duplicate_nearby(out_lines, insert_idx, code_block, window=8)
-        if dup_info['exists'] and not force:
-            logger.info("Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).")
+        # choose duplicate detector
+        if strict:
+            dup = find_duplicate_nearby_strict(out_lines, insert_idx, code_block, window=8)
+        else:
+            dup = find_duplicate_nearby_relaxed(out_lines, insert_idx, code_block, window=8)
+        if dup['exists'] and not force:
+            logger.info("Code seems already nearby -> skipped (dup-protect).")
             if show_skipped:
-                logger.info("Duplikat-Details: reason=%s matches=%s", dup_info['reason'], dup_info['matches'][:5])
-                logger.info("Donor-Block (erste 6 Zeilen):")
+                logger.info("Dup info: reason=%s matches=%s", dup['reason'], dup['matches'][:6])
+                logger.info("Donor block preview:")
                 for ln in (code_block[:6] if len(code_block)>6 else code_block):
                     logger.info("  %s", ln.rstrip())
-                # show nearby original context
-                for mi, snippet in dup_info['matches'][:6]:
-                    start = max(0, mi-3)
-                    end = min(len(out_lines), mi+4)
-                    logger.info(" Original-Lines around %d:", mi+1)
-                    for i in range(start, end):
+                for mi, snippet in dup['matches'][:6]:
+                    s = max(0, mi-3)
+                    e = min(len(out_lines), mi+4)
+                    logger.info(" Surrounding original lines around %d:", mi+1)
+                    for i in range(s,e):
                         logger.info("   %4d | %s", i+1, out_lines[i].rstrip())
             continue
-        # if force and dup exists, still proceed but log
-        if dup_info['exists'] and force:
-            logger.warning("Force-Flag aktiv: Duplikat erkannt (%s) — erzwinge Einfügen.", dup_info.get('reason','?'))
+        if dup['exists'] and force:
+            logger.warning("Force active: duplicate detected (%s) but will insert.", dup.get('reason','?'))
         ref_line = out_lines[pos] if pos < len(out_lines) else ""
-        indented_block = preserve_indentation(ref_line, code_block)
+        indented = preserve_indentation(ref_line, code_block)
         if dry_run:
-            logger.info(f"[dry-run] würde {len(indented_block)} Zeilen bei Zeile {insert_idx+1} einfügen (fallback={used_fallback})")
+            logger.info("[dry-run] would insert %d lines at %d (fallback=%s)" % (len(indented), insert_idx+1, used_fallback))
             if verbose:
-                for ln in indented_block[:8]:
+                for ln in indented[:10]:
                     logger.info("  -> %s", ln.rstrip())
             inserted += 1
             continue
-        for i, ln in enumerate(indented_block):
+        for i, ln in enumerate(indented):
             out_lines.insert(insert_idx + i, ln)
-        logger.info(f"Block {idx} eingefügt bei Zeile {insert_idx+1} ({len(indented_block)} Zeilen). (fallback={used_fallback})")
+        logger.info("Inserted block %d at line %d (%d lines) (fallback=%s)" % (idx, insert_idx+1, len(indented), used_fallback))
         if verbose:
-            for ln in indented_block[:8]:
+            for ln in indented[:8]:
                 logger.info("  -> %s", ln.rstrip())
         inserted += 1
     if inserted > 0 and not dry_run:
         new_text = "\n".join(out_lines) + "\n"
         write_atomic(orig_path, new_text, encoding=(orig_enc or "utf-8"))
-        logger.info(f"{os.path.basename(orig_path)} aktualisiert: {inserted}/{total_blocks} Blöcke eingefügt.")
+        logger.info(f"{os.path.basename(orig_path)} updated: {inserted}/{total_blocks} blocks inserted.")
     elif inserted > 0 and dry_run:
-        logger.info(f"[dry-run] würde {inserted}/{total_blocks} Blöcke einfügen.")
+        logger.info(f"[dry-run] would insert {inserted}/{total_blocks} blocks.")
     else:
-        logger.info("Keine Änderungen vorgenommen.")
+        logger.info("No changes made.")
     return inserted, total_blocks
 
-# ----------------- Runner -----------------
+# ---------- runner ----------
 def resolve_dirs(donor_arg, orig_arg, backup_arg):
     if donor_arg or orig_arg or backup_arg:
         d = os.path.abspath(donor_arg) if donor_arg else os.path.join(BASE_DIR, "donor")
@@ -427,7 +485,7 @@ def collect_files(donor_dir: str) -> List[str]:
     for root, _, fs in os.walk(donor_dir):
         for f in fs:
             if f.lower().endswith(SUPPORTED_EXTS):
-                rel = os.path.relpath(os.path.join(root, f), donor_dir)
+                rel = os.path.relpath(os.path.join(root,f), donor_dir)
                 files.append(rel)
     files.sort()
     return files
@@ -440,19 +498,20 @@ def parse_args():
     p.add_argument("--file", default=None)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--verbose", action="store_true")
-    p.add_argument("--force", action="store_true", help="Force insertion even if duplicate detected")
-    p.add_argument("--show-skipped", action="store_true", help="Show details about skipped blocks")
+    p.add_argument("--show-skipped", action="store_true")
+    p.add_argument("--force", action="store_true", help="Force insert even if duplicate detected")
+    p.add_argument("--strict", action="store_true", help="Use strict duplicate detection")
     return p.parse_args()
 
 def main():
     args = parse_args()
     donor_dir, orig_dir, backup_dir = resolve_dirs(args.donor, args.orig, args.backup)
-    logger.info(f"Pfad-Auflösung:\n  donor:  {donor_dir}\n  orig:   {orig_dir}\n  backup: {backup_dir}")
+    logger.info(f"Paths:\n donor: {donor_dir}\n orig:  {orig_dir}\n backup:{backup_dir}")
     if not os.path.isdir(donor_dir):
-        logger.error(f"Donor-Ordner nicht gefunden: {donor_dir}")
+        logger.error(f"Donor folder not found: {donor_dir}")
         return
     if not os.path.isdir(orig_dir):
-        logger.error(f"Original-Ordner nicht gefunden: {orig_dir}")
+        logger.error(f"Original folder not found: {orig_dir}")
         return
     os.makedirs(backup_dir, exist_ok=True)
     if args.file:
@@ -467,16 +526,19 @@ def main():
         orig_path = os.path.join(orig_dir, fn)
         total_files += 1
         if not os.path.isfile(orig_path):
-            logger.warning(f"Original-Datei für {fn} nicht gefunden: {orig_path} - übersprungen")
+            logger.warning(f"Original for {fn} not found -> skip")
             continue
-        ins, blocks = merge_one_file(donor_path, orig_path, backup_dir, dry_run=args.dry_run, verbose=args.verbose, force=args.force, show_skipped=args.show_skipped)
+        ins, blocks = merge_one_file(donor_path, orig_path, backup_dir,
+                                     dry_run=args.dry_run, verbose=args.verbose,
+                                     force=args.force, strict=args.strict,
+                                     show_skipped=args.show_skipped)
         total_blocks += blocks
         total_inserted += ins
-    logger.info(f"Fertig: Dateien verarbeitet: {total_files}. Blöcke insgesamt: {total_blocks}. Eingefügt: {total_inserted}.")
+    logger.info(f"Done. Files processed: {total_files}. Blocks total: {total_blocks}. Inserted: {total_inserted}.")
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        logger.exception("Unbehandelter Fehler: %s", e)
+        logger.exception("Unhandled error: %s", e)
         sys.exit(2)

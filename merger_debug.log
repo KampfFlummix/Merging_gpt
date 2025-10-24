@@ -126,3 +126,50 @@
 2025-10-24 21:52:38,106 [INFO] Block 13 eingefügt bei Zeile 7717 (4 Zeilen). (fallback=False)
 2025-10-24 21:52:38,110 [INFO] char_item.cpp aktualisiert: 9/13 Blöcke eingefügt.
 2025-10-24 21:52:38,110 [INFO] Fertig: Dateien verarbeitet: 1. Blöcke insgesamt: 13. Eingefügt: 9.
+2025-10-24 21:55:35,781 [INFO] Pfad-Auflösung:
+  donor:  C:\Projects\Merger - GPT\donor
+  orig:   C:\Projects\Merger - GPT\original
+  backup: C:\Projects\Merger - GPT\backup
+2025-10-24 21:55:35,782 [INFO] Verarbeite Donor: C:\Projects\Merger - GPT\donor\char_item.cpp -> Original: C:\Projects\Merger - GPT\original\char_item.cpp
+2025-10-24 21:55:35,790 [INFO] Backup erstellt: C:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_215535
+2025-10-24 21:55:35,792 [INFO] Block 1/13: Code-Länge: 5 Zeilen
+2025-10-24 21:55:35,943 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:55:35,943 [INFO] Block 2/13: Code-Länge: 1 Zeilen
+2025-10-24 21:55:36,404 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:55:36,404 [INFO] Block 3/13: Code-Länge: 4 Zeilen
+2025-10-24 21:55:36,884 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:55:36,885 [INFO] Block 4/13: Code-Länge: 28 Zeilen
+2025-10-24 21:59:27,482 [INFO] Paths:
+ donor: c:\Projects\Merger - GPT\donor
+ orig:  c:\Projects\Merger - GPT\original
+ backup:c:\Projects\Merger - GPT\backup
+2025-10-24 21:59:27,483 [INFO] Process: Donor='c:\Projects\Merger - GPT\donor\char_item.cpp' -> Original='c:\Projects\Merger - GPT\original\char_item.cpp'
+2025-10-24 21:59:27,488 [INFO] Backup created: c:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_215927
+2025-10-24 21:59:27,490 [INFO] Block 1/13: code-length=5
+2025-10-24 21:59:27,661 [INFO] Code seems already nearby -> skipped (dup-protect).
+2025-10-24 21:59:27,661 [INFO] Block 2/13: code-length=1
+2025-10-24 21:59:28,230 [INFO] Inserted block 2 at line 240 (1 lines) (fallback=False)
+2025-10-24 21:59:28,230 [INFO] Block 3/13: code-length=4
+2025-10-24 21:59:28,685 [INFO] Inserted block 3 at line 253 (4 lines) (fallback=False)
+2025-10-24 21:59:28,685 [INFO] Block 4/13: code-length=28
+2025-10-24 21:59:29,085 [INFO] Inserted block 4 at line 241 (28 lines) (fallback=False)
+2025-10-24 21:59:29,086 [INFO] Block 5/13: code-length=8
+2025-10-24 21:59:29,441 [INFO] Inserted block 5 at line 272 (8 lines) (fallback=False)
+2025-10-24 21:59:29,441 [INFO] Block 6/13: code-length=2
+2025-10-24 21:59:29,841 [INFO] Code seems already nearby -> skipped (dup-protect).
+2025-10-24 21:59:29,842 [INFO] Block 7/13: code-length=2
+2025-10-24 21:59:30,252 [INFO] Inserted block 7 at line 560 (2 lines) (fallback=False)
+2025-10-24 21:59:30,252 [INFO] Block 8/13: code-length=17
+2025-10-24 21:59:30,667 [INFO] Code seems already nearby -> skipped (dup-protect).
+2025-10-24 21:59:30,668 [INFO] Block 9/13: code-length=2
+2025-10-24 21:59:30,962 [INFO] Inserted block 9 at line 1789 (2 lines) (fallback=False)
+2025-10-24 21:59:30,963 [INFO] Block 10/13: code-length=1
+2025-10-24 21:59:31,400 [INFO] Code seems already nearby -> skipped (dup-protect).
+2025-10-24 21:59:31,400 [INFO] Block 11/13: code-length=19
+2025-10-24 21:59:31,740 [INFO] Inserted block 11 at line 5707 (19 lines) (fallback=False)
+2025-10-24 21:59:31,741 [INFO] Block 12/13: code-length=2
+2025-10-24 21:59:32,167 [INFO] Inserted block 12 at line 5707 (2 lines) (fallback=False)
+2025-10-24 21:59:32,168 [INFO] Block 13/13: code-length=4
+2025-10-24 21:59:32,539 [INFO] Inserted block 13 at line 7737 (4 lines) (fallback=False)
+2025-10-24 21:59:32,543 [INFO] char_item.cpp updated: 9/13 blocks inserted.
+2025-10-24 21:59:32,543 [INFO] Done. Files processed: 1. Blocks total: 13. Inserted: 9.
