@@ -58,3 +58,71 @@
 2025-10-24 21:42:23,050 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (vermeidet Duplikat).
 2025-10-24 21:42:23,054 [INFO] char_item.cpp erfolgreich aktualisiert. 5/26 Blöcke eingefügt.
 2025-10-24 21:42:23,054 [INFO] Fertig: Dateien verarbeitet: 1. Blöcke insgesamt: 26. Eingefügt: 5.
+2025-10-24 21:49:39,941 [INFO] Pfad-Auflösung:
+  donor:  c:\Projects\Merger - GPT\donor
+  orig:   c:\Projects\Merger - GPT\original
+  backup: c:\Projects\Merger - GPT\backup
+2025-10-24 21:49:39,942 [INFO] Verarbeite Donor: c:\Projects\Merger - GPT\donor\char_item.cpp -> Original: c:\Projects\Merger - GPT\original\char_item.cpp
+2025-10-24 21:49:39,961 [INFO] Backup erstellt: c:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_214939
+2025-10-24 21:49:39,962 [INFO] Block 1/13: Code-Länge: 5 Zeilen
+2025-10-24 21:49:40,131 [INFO] Block 1 eingefügt bei Zeile 50 (5 Zeilen).
+2025-10-24 21:49:40,131 [INFO] Block 2/13: Code-Länge: 1 Zeilen
+2025-10-24 21:49:40,596 [INFO] Block 2 eingefügt bei Zeile 56 (1 Zeilen).
+2025-10-24 21:49:40,596 [INFO] Block 3/13: Code-Länge: 4 Zeilen
+2025-10-24 21:49:41,102 [INFO] Block 3 eingefügt bei Zeile 258 (4 Zeilen).
+2025-10-24 21:49:41,102 [INFO] Block 4/13: Code-Länge: 28 Zeilen
+2025-10-24 21:49:41,497 [INFO] Block 4 eingefügt bei Zeile 57 (28 Zeilen).
+2025-10-24 21:49:41,497 [INFO] Block 5/13: Code-Länge: 8 Zeilen
+2025-10-24 21:49:41,842 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:49:41,843 [INFO] Block 6/13: Code-Länge: 2 Zeilen
+2025-10-24 21:49:42,203 [INFO] Block 6 eingefügt bei Zeile 89 (2 Zeilen).
+2025-10-24 21:49:42,203 [INFO] Block 7/13: Code-Länge: 2 Zeilen
+2025-10-24 21:49:42,566 [INFO] Block 7 eingefügt bei Zeile 559 (2 Zeilen).
+2025-10-24 21:49:42,566 [INFO] Block 8/13: Code-Länge: 17 Zeilen
+2025-10-24 21:49:42,963 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:49:42,964 [INFO] Block 9/13: Code-Länge: 2 Zeilen
+2025-10-24 21:49:43,252 [INFO] Block 9 eingefügt bei Zeile 1788 (2 Zeilen).
+2025-10-24 21:49:43,253 [INFO] Block 10/13: Code-Länge: 1 Zeilen
+2025-10-24 21:49:43,678 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:49:43,678 [INFO] Block 11/13: Code-Länge: 19 Zeilen
+2025-10-24 21:49:44,022 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:49:44,023 [INFO] Block 12/13: Code-Länge: 2 Zeilen
+2025-10-24 21:49:44,441 [INFO] Block 12 eingefügt bei Zeile 5706 (2 Zeilen).
+2025-10-24 21:49:44,442 [INFO] Block 13/13: Code-Länge: 4 Zeilen
+2025-10-24 21:49:44,803 [INFO] Block 13 eingefügt bei Zeile 7717 (4 Zeilen).
+2025-10-24 21:49:44,807 [INFO] char_item.cpp aktualisiert: 9/13 Blöcke eingefügt.
+2025-10-24 21:49:44,808 [INFO] Fertig: Dateien verarbeitet: 1. Blöcke insgesamt: 13. Eingefügt: 9.
+2025-10-24 21:52:33,235 [INFO] Pfad-Auflösung:
+  donor:  c:\Projects\Merger - GPT\donor
+  orig:   c:\Projects\Merger - GPT\original
+  backup: c:\Projects\Merger - GPT\backup
+2025-10-24 21:52:33,236 [INFO] Verarbeite Donor: c:\Projects\Merger - GPT\donor\char_item.cpp -> Original: c:\Projects\Merger - GPT\original\char_item.cpp
+2025-10-24 21:52:33,257 [INFO] Backup erstellt: c:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_215233
+2025-10-24 21:52:33,260 [INFO] Block 1/13: Code-Länge: 5 Zeilen
+2025-10-24 21:52:33,441 [INFO] Block 1 eingefügt bei Zeile 50 (5 Zeilen). (fallback=True)
+2025-10-24 21:52:33,442 [INFO] Block 2/13: Code-Länge: 1 Zeilen
+2025-10-24 21:52:33,880 [INFO] Block 2 eingefügt bei Zeile 56 (1 Zeilen). (fallback=False)
+2025-10-24 21:52:33,880 [INFO] Block 3/13: Code-Länge: 4 Zeilen
+2025-10-24 21:52:34,347 [INFO] Block 3 eingefügt bei Zeile 258 (4 Zeilen). (fallback=False)
+2025-10-24 21:52:34,348 [INFO] Block 4/13: Code-Länge: 28 Zeilen
+2025-10-24 21:52:34,793 [INFO] Block 4 eingefügt bei Zeile 57 (28 Zeilen). (fallback=False)
+2025-10-24 21:52:34,793 [INFO] Block 5/13: Code-Länge: 8 Zeilen
+2025-10-24 21:52:35,144 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:52:35,144 [INFO] Block 6/13: Code-Länge: 2 Zeilen
+2025-10-24 21:52:35,505 [INFO] Block 6 eingefügt bei Zeile 89 (2 Zeilen). (fallback=False)
+2025-10-24 21:52:35,505 [INFO] Block 7/13: Code-Länge: 2 Zeilen
+2025-10-24 21:52:35,859 [INFO] Block 7 eingefügt bei Zeile 559 (2 Zeilen). (fallback=False)
+2025-10-24 21:52:35,859 [INFO] Block 8/13: Code-Länge: 17 Zeilen
+2025-10-24 21:52:36,247 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:52:36,248 [INFO] Block 9/13: Code-Länge: 2 Zeilen
+2025-10-24 21:52:36,538 [INFO] Block 9 eingefügt bei Zeile 1788 (2 Zeilen). (fallback=False)
+2025-10-24 21:52:36,538 [INFO] Block 10/13: Code-Länge: 1 Zeilen
+2025-10-24 21:52:36,973 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:52:36,974 [INFO] Block 11/13: Code-Länge: 19 Zeilen
+2025-10-24 21:52:37,312 [INFO] Code scheint bereits in der Nähe vorhanden -> übersprungen (Duplikatschutz).
+2025-10-24 21:52:37,312 [INFO] Block 12/13: Code-Länge: 2 Zeilen
+2025-10-24 21:52:37,742 [INFO] Block 12 eingefügt bei Zeile 5706 (2 Zeilen). (fallback=False)
+2025-10-24 21:52:37,742 [INFO] Block 13/13: Code-Länge: 4 Zeilen
+2025-10-24 21:52:38,106 [INFO] Block 13 eingefügt bei Zeile 7717 (4 Zeilen). (fallback=False)
+2025-10-24 21:52:38,110 [INFO] char_item.cpp aktualisiert: 9/13 Blöcke eingefügt.
+2025-10-24 21:52:38,110 [INFO] Fertig: Dateien verarbeitet: 1. Blöcke insgesamt: 13. Eingefügt: 9.

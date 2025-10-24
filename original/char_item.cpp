@@ -47,11 +47,47 @@
 #include "DragonSoul.h"
 #include "buff_on_attributes.h"
 #include "belt_inventory_helper.h"
+#include "belt_inventory_helper.h"
+
+#ifdef ENABLE_SWITCHBOT
+#include "new_switchbot.h"
+#endif
 #include "../../common/CommonDefines.h"
+case DRAGON_SOUL_INVENTORY:
+#ifdef ENABLE_SWITCHBOT
+case SWITCHBOT:
+{
+LPITEM pOld = m_pointsInstant.pSwitchbotItems[wCell];
+if (pItem && pOld)
+{
+return;
+}
+
+if (wCell >= SWITCHBOT_SLOT_COUNT)
+{
+sys_err("CHARACTER::SetItem: invalid switchbot item cell %d", wCell);
+return;
+}
+
+if (pItem)
+{
+CSwitchbotManager::Instance().RegisterItem(GetPlayerID(), pItem->GetID(), wCell);
+}
+else
+{
+CSwitchbotManager::Instance().UnregisterItem(GetPlayerID(), wCell);
+}
+
+m_pointsInstant.pSwitchbotItems[wCell] = pItem;
+}
+break;
+#endif
 #include "PetSystem.h"
 
 #ifdef ENABLE_IKASHOP_RENEWAL
 #	ifdef EXTEND_IKASHOP_ULTIMATE
+void CHARACTER::ClearItem()
+{
 #include "ikarus_shop_manager.h"
 #	endif
 #endif
@@ -250,6 +286,9 @@ LPITEM CHARACTER::GetItem(TItemPos Cell) const
 	WORD wCell = Cell.cell;
 	BYTE window_type = Cell.window_type;
 	}
+
+	void CHARACTER::SetItem(TItemPos Cell, LPITEM pItem)
+	{
 	switch (window_type)
 	{
 	case INVENTORY:
@@ -517,6 +556,8 @@ void CHARACTER::ClearItem()
 			M2_DESTROY_ITEM(item);
 
 			SyncQuickslot(QUICKSLOT_TYPE_ITEM, i, 255);
+			bool CHARACTER::IsEmptyItemGrid(TItemPos Cell, BYTE bSize, int iExceptionCell) const
+			{
 		}
 	}
 	for (i = 0; i < DRAGON_SOUL_INVENTORY_MAX_NUM; ++i)
@@ -1535,8 +1576,6 @@ void CHARACTER::__OpenPrivateShop()
 #endif
 }
 
-if (pItem)
-{
 // MYSHOP_PRICE_LIST
 void CHARACTER::SendMyShopPriceListCmd(DWORD dwItemVnum, DWORD dwItemPrice)
 {
@@ -1746,6 +1785,8 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 #endif
 
 			if (GetArena() != NULL || IsObserverMode() == true)
+			bool CHARACTER::UseItem(TItemPos Cell, TItemPos DestCell)
+			{
 			{
 				if (item->GetVnum() == 50051 || item->GetVnum() == 50052 || item->GetVnum() == 50053)
 				{
@@ -2036,8 +2077,6 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 									ChatPacket(CHAT_TYPE_INFO, LC_TEXT("상자에서 나온 녹색 연기를 들이마시자 독이 온몸으로 퍼집니다!"));
 									break;
 #endif
-}
-}
 								case CSpecialItemGroup::MOB_GROUP:
 									ChatPacket(CHAT_TYPE_INFO, LC_TEXT("상자에서 몬스터가 나타났습니다!"));
 									break;
@@ -5664,12 +5703,10 @@ bool CHARACTER::DropCheque(int cheque)
 }
 #endif
 
+bool CHARACTER::IsValidItemPosition(TItemPos Pos) const
+{
 bool CHARACTER::MoveItem(TItemPos Cell, TItemPos DestCell, BYTE count)
 {
-    bool CHARACTER::IsEmptyItemGrid(TItemPos Cell, BYTE bSize, int iExceptionCell) const
-    {
-    void CHARACTER::SetItem(TItemPos Cell, LPITEM pItem)
-    {
 	if (Cell.IsSamePosition(DestCell)) // @fixme196 (check same slot n same window aliases)
 		return false;
 
@@ -7677,6 +7714,10 @@ bool CHARACTER::IsValidItemPosition(TItemPos Pos) const
 			return false;
 
 	case MALL:
+#ifdef ENABLE_SWITCHBOT
+	case SWITCHBOT:
+	return cell < SWITCHBOT_SLOT_COUNT;
+#endif
 		if (NULL != m_pkMall)
 			return m_pkMall->IsValidPosition(cell);
 		else
