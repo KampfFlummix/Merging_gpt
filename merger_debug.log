@@ -1,0 +1,121 @@
+2025-10-24 21:25:18,932 [INFO] Pfad-Auflösung:
+  donor:  c:\Projects\Merger - GPT\donor
+  orig:   c:\Projects\Merger - GPT\original
+  backup: c:\Projects\Merger - GPT\backup
+2025-10-24 21:25:18,933 [INFO] Verarbeite: Donor='c:\Projects\Merger - GPT\donor\char_item.cpp' -> Original='c:\Projects\Merger - GPT\original\char_item.cpp'
+2025-10-24 21:25:18,955 [INFO] Backup erstellt: c:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_212518
+2025-10-24 21:25:18,959 [INFO] Block 1/26: 0 Zeilen
+2025-10-24 21:25:18,960 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:18,960 [INFO] Block 2/26: 0 Zeilen
+2025-10-24 21:25:18,961 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:18,961 [INFO] Block 3/26: 0 Zeilen
+2025-10-24 21:25:18,961 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:18,962 [INFO] Block 4/26: 0 Zeilen
+2025-10-24 21:25:18,962 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:18,962 [INFO] Block 5/26: 1 Zeilen
+2025-10-24 21:25:19,652 [INFO] Block 5 eingefügt bei Zeile 7735 (match pos 7734).
+2025-10-24 21:25:19,652 [INFO] Block 6/26: 0 Zeilen
+2025-10-24 21:25:19,653 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:19,653 [INFO] Block 7/26: 0 Zeilen
+2025-10-24 21:25:19,653 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:19,654 [INFO] Block 8/26: 0 Zeilen
+2025-10-24 21:25:19,654 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:19,654 [INFO] Block 9/26: 0 Zeilen
+2025-10-24 21:25:19,654 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:19,655 [INFO] Block 10/26: 2 Zeilen
+2025-10-24 21:25:20,279 [INFO] Block 10 eingefügt bei Zeile 7792 (match pos 7791).
+2025-10-24 21:25:20,280 [INFO] Block 11/26: 0 Zeilen
+2025-10-24 21:25:20,280 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,280 [INFO] Block 12/26: 0 Zeilen
+2025-10-24 21:25:20,280 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,281 [INFO] Block 13/26: 0 Zeilen
+2025-10-24 21:25:20,281 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,281 [INFO] Block 14/26: 0 Zeilen
+2025-10-24 21:25:20,281 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,281 [INFO] Block 15/26: 0 Zeilen
+2025-10-24 21:25:20,282 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,282 [INFO] Block 16/26: 1 Zeilen
+2025-10-24 21:25:20,623 [INFO] Block 16 eingefügt bei Zeile 1744 (match pos 1743).
+2025-10-24 21:25:20,623 [INFO] Block 17/26: 0 Zeilen
+2025-10-24 21:25:20,624 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,624 [INFO] Block 18/26: 0 Zeilen
+2025-10-24 21:25:20,624 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:20,625 [INFO] Block 19/26: 1 Zeilen
+2025-10-24 21:25:21,114 [INFO] Block 19 eingefügt bei Zeile 7880 (match pos 7879).
+2025-10-24 21:25:21,114 [INFO] Block 20/26: 0 Zeilen
+2025-10-24 21:25:21,115 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:21,115 [INFO] Block 21/26: 0 Zeilen
+2025-10-24 21:25:21,115 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:21,115 [INFO] Block 22/26: 1 Zeilen
+2025-10-24 21:25:21,655 [INFO] Block 22 eingefügt bei Zeile 7910 (match pos 7909).
+2025-10-24 21:25:21,655 [INFO] Block 23/26: 0 Zeilen
+2025-10-24 21:25:21,655 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:21,655 [INFO] Block 24/26: 0 Zeilen
+2025-10-24 21:25:21,656 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:21,656 [INFO] Block 25/26: 0 Zeilen
+2025-10-24 21:25:21,656 [WARNING] Block ohne Code, übersprungen.
+2025-10-24 21:25:21,656 [INFO] Block 26/26: 1 Zeilen
+2025-10-24 21:25:22,181 [INFO] Block 26 eingefügt bei Zeile 7926 (match pos 7925).
+2025-10-24 21:25:22,185 [INFO] char_item.cpp aktualisiert: 6/26 Blöcke eingefügt.
+2025-10-24 21:25:22,186 [INFO] Fertig. Dateien verarbeitet: 1. Blöcke insgesamt: 26. Eingefügt: 6.
+2025-10-24 21:35:32,257 [INFO] Pfad-Auflösung:
+  donor:  c:\Projects\Merger - GPT\donor
+  orig:   c:\Projects\Merger - GPT\original
+  backup: c:\Projects\Merger - GPT\backup
+2025-10-24 21:35:32,258 [INFO] Verarbeite Donor: c:\Projects\Merger - GPT\donor\char_item.cpp -> Original: c:\Projects\Merger - GPT\original\char_item.cpp
+2025-10-24 21:35:32,264 [INFO] Backup erstellt: c:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_213532
+2025-10-24 21:35:32,264 [INFO] Block 1/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,265 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,265 [INFO] Block 2/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,265 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,266 [INFO] Block 3/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,266 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,266 [INFO] Block 4/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,266 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,267 [INFO] Block 5/26: Code-Länge: 1 Zeilen
+2025-10-24 21:35:32,960 [INFO] Block 5: eingefügt bei Zeile 252 (nach match pos 251).
+2025-10-24 21:35:32,960 [INFO] Block 6/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,961 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,961 [INFO] Block 7/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,961 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,961 [INFO] Block 8/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,961 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,961 [INFO] Block 9/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:32,962 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:32,962 [INFO] Block 10/26: Code-Länge: 2 Zeilen
+2025-10-24 21:35:33,565 [INFO] Block 10: eingefügt bei Zeile 1923 (nach match pos 1922).
+2025-10-24 21:35:33,566 [INFO] Block 11/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,566 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,567 [INFO] Block 12/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,567 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,567 [INFO] Block 13/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,567 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,568 [INFO] Block 14/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,568 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,568 [INFO] Block 15/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,568 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,568 [INFO] Block 16/26: Code-Länge: 1 Zeilen
+2025-10-24 21:35:33,886 [INFO] Block 16: eingefügt bei Zeile 1745 (nach match pos 1744).
+2025-10-24 21:35:33,886 [INFO] Block 17/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,887 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,887 [INFO] Block 18/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:33,887 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:33,887 [INFO] Block 19/26: Code-Länge: 1 Zeilen
+2025-10-24 21:35:34,426 [INFO] Block 19: eingefügt bei Zeile 1745 (nach match pos 1744).
+2025-10-24 21:35:34,427 [INFO] Block 20/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:34,428 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:34,428 [INFO] Block 21/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:34,428 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:34,429 [INFO] Block 22/26: Code-Länge: 1 Zeilen
+2025-10-24 21:35:35,002 [INFO] Block 22: eingefügt bei Zeile 1677 (nach match pos 1676).
+2025-10-24 21:35:35,002 [INFO] Block 23/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:35,002 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:35,003 [INFO] Block 24/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:35,003 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:35,003 [INFO] Block 25/26: Code-Länge: 0 Zeilen
+2025-10-24 21:35:35,003 [WARNING] Block ohne Code; überspringe.
+2025-10-24 21:35:35,004 [INFO] Block 26/26: Code-Länge: 1 Zeilen
+2025-10-24 21:35:37,833 [INFO] Kontext-basierte Suche fehlgeschlagen, versuche Keyword-Fallback...
+2025-10-24 21:35:37,834 [WARNING] Keine passende Einfügestelle gefunden (Block wird übersprungen).
+2025-10-24 21:35:37,838 [INFO] char_item.cpp erfolgreich aktualisiert. 5/26 Blöcke eingefügt.
+2025-10-24 21:35:37,839 [INFO] Fertig: Dateien verarbeitet: 1. Blöcke insgesamt: 26. Eingefügt: 5.
