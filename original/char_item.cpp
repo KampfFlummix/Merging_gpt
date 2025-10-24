@@ -47,14 +47,80 @@
 #include "DragonSoul.h"
 #include "buff_on_attributes.h"
 #include "belt_inventory_helper.h"
+#include "belt_inventory_helper.h"
+
+#ifdef ENABLE_SWITCHBOT
+#include "new_switchbot.h"
+#endif
 #include "../../common/CommonDefines.h"
+case DRAGON_SOUL_INVENTORY:
+#ifdef ENABLE_SWITCHBOT
+#ifdef ENABLE_SWITCHBOT
+case SWITCHBOT:
+{
+WORD wCell = Cell.cell;
+if (wCell >= SWITCHBOT_SLOT_COUNT)
+{
+return false;
+}
+
+if (m_pointsInstant.pSwitchbotItems[wCell])
+{
+return false;
+}
+
+return true;
+}
+#endif
+}
+case SWITCHBOT:
+{
+    bool CHARACTER::UseItem(TItemPos Cell, TItemPos DestCell)
+    {
+LPITEM pOld = m_pointsInstant.pSwitchbotItems[wCell];
+if (pItem && pOld)
+{
+return;
+}
+
+if (wCell >= SWITCHBOT_SLOT_COUNT)
+{
+sys_err("CHARACTER::SetItem: invalid switchbot item cell %d", wCell);
+return;
+}
+
+if (pItem)
+{
+CSwitchbotManager::Instance().RegisterItem(GetPlayerID(), pItem->GetID(), wCell);
+}
+else
+{
+CSwitchbotManager::Instance().UnregisterItem(GetPlayerID(), wCell);
+}
+
+m_pointsInstant.pSwitchbotItems[wCell] = pItem;
+}
+break;
+#endif
 #include "PetSystem.h"
 
 #ifdef ENABLE_IKASHOP_RENEWAL
 #	ifdef EXTEND_IKASHOP_ULTIMATE
+case DRAGON_SOUL_INVENTORY:
+pItem->SetWindow(DRAGON_SOUL_INVENTORY);
+break;
+#ifdef ENABLE_SWITCHBOT
+case SWITCHBOT:
+pItem->SetWindow(SWITCHBOT);
+break;
+#endif		
 #include "ikarus_shop_manager.h"
 #	endif
+bool CHARACTER::IsEmptyItemGrid(TItemPos Cell, BYTE bSize, int iExceptionCell) const
+{
 #endif
+void CHARACTER::ClearItem()
+{
 
 #define ENABLE_EFFECT_EXTRAPOT
 #define ENABLE_BOOKS_STACKFIX
@@ -237,46 +303,9 @@ bool CHARACTER::CanHandleItem(bool bSkipCheckRefine, bool bSkipObserver)
 
 LPITEM CHARACTER::GetInventoryItem(WORD wCell) const
 {
-    case DRAGON_SOUL_INVENTORY:
-#ifdef ENABLE_SWITCHBOT
-    case SWITCHBOT:
-    {
-    LPITEM pOld = m_pointsInstant.pSwitchbotItems[wCell];
-    if (pItem && pOld)
-    {
-    return;
-    }
-
-    if (wCell >= SWITCHBOT_SLOT_COUNT)
-    {
-    sys_err("CHARACTER::SetItem: invalid switchbot item cell %d", wCell);
-    return;
-    }
-
-    if (pItem)
-    {
-    CSwitchbotManager::Instance().RegisterItem(GetPlayerID(), pItem->GetID(), wCell);
-    }
-    else
-    {
-    CSwitchbotManager::Instance().UnregisterItem(GetPlayerID(), wCell);
-    }
-
-    m_pointsInstant.pSwitchbotItems[wCell] = pItem;
-    }
-    break;
-#endif
 	return GetItem(TItemPos(INVENTORY, wCell));
 }
 LPITEM CHARACTER::GetItem(TItemPos Cell) const
-case DRAGON_SOUL_INVENTORY:
-pItem->SetWindow(DRAGON_SOUL_INVENTORY);
-break;
-#ifdef ENABLE_SWITCHBOT
-case SWITCHBOT:
-pItem->SetWindow(SWITCHBOT);
-break;
-#endif		
 {
 	if (!m_PlayerSlots)
 		return nullptr;
@@ -557,8 +586,6 @@ void CHARACTER::ClearItem()
 			M2_DESTROY_ITEM(item);
 
 			SyncQuickslot(QUICKSLOT_TYPE_ITEM, i, 255);
-			bool CHARACTER::IsEmptyItemGrid(TItemPos Cell, BYTE bSize, int iExceptionCell) const
-			{
 		}
 	}
 	for (i = 0; i < DRAGON_SOUL_INVENTORY_MAX_NUM; ++i)
@@ -1786,8 +1813,6 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 #endif
 
 			if (GetArena() != NULL || IsObserverMode() == true)
-			bool CHARACTER::UseItem(TItemPos Cell, TItemPos DestCell)
-			{
 			{
 				if (item->GetVnum() == 50051 || item->GetVnum() == 50052 || item->GetVnum() == 50053)
 				{

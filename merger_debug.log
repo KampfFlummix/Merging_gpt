@@ -173,3 +173,40 @@
 2025-10-24 21:59:32,539 [INFO] Inserted block 13 at line 7737 (4 lines) (fallback=False)
 2025-10-24 21:59:32,543 [INFO] char_item.cpp updated: 9/13 blocks inserted.
 2025-10-24 21:59:32,543 [INFO] Done. Files processed: 1. Blocks total: 13. Inserted: 9.
+2025-10-24 22:14:56,836 [INFO] Paths:
+ donor: c:\Projects\Merger - GPT\donor
+ orig:  c:\Projects\Merger - GPT\original
+ backup:c:\Projects\Merger - GPT\backup
+2025-10-24 22:14:56,837 [INFO] Process: Donor='c:\Projects\Merger - GPT\donor\char_item.cpp' -> Original='c:\Projects\Merger - GPT\original\char_item.cpp'
+2025-10-24 22:14:56,842 [INFO] Backup created: c:\Projects\Merger - GPT\backup\char_item.cpp.bak.20251024_221456
+2025-10-24 22:14:56,844 [INFO] Block 1/13: code-length=5
+2025-10-24 22:14:57,003 [INFO] Duplicate detected but FORCE enabled -> inserting anyway. Reason: multi-line token overlap 0.57
+2025-10-24 22:14:57,003 [INFO] Inserted block 1 at line 50 (5 lines) (fallback=True)
+2025-10-24 22:14:57,004 [INFO] Block 2/13: code-length=1
+2025-10-24 22:14:57,462 [INFO] Inserted block 2 at line 56 (1 lines) (fallback=False)
+2025-10-24 22:14:57,462 [INFO] Block 3/13: code-length=4
+2025-10-24 22:14:58,096 [INFO] Inserted block 3 at line 258 (4 lines) (fallback=False)
+2025-10-24 22:14:58,096 [INFO] Block 4/13: code-length=28
+2025-10-24 22:14:58,525 [INFO] Inserted block 4 at line 57 (28 lines) (fallback=False)
+2025-10-24 22:14:58,525 [INFO] Block 5/13: code-length=8
+2025-10-24 22:14:58,880 [INFO] Inserted block 5 at line 89 (8 lines) (fallback=False)
+2025-10-24 22:14:58,881 [INFO] Block 6/13: code-length=2
+2025-10-24 22:14:59,247 [INFO] Inserted block 6 at line 100 (2 lines) (fallback=False)
+2025-10-24 22:14:59,247 [INFO] Block 7/13: code-length=2
+2025-10-24 22:14:59,610 [INFO] Inserted block 7 at line 99 (2 lines) (fallback=False)
+2025-10-24 22:14:59,611 [INFO] Block 8/13: code-length=17
+2025-10-24 22:15:00,009 [INFO] Duplicate detected but FORCE enabled -> inserting anyway. Reason: multi-line token overlap 0.67
+2025-10-24 22:15:00,009 [INFO] Inserted block 8 at line 58 (17 lines) (fallback=False)
+2025-10-24 22:15:00,009 [INFO] Block 9/13: code-length=2
+2025-10-24 22:15:00,303 [INFO] Inserted block 9 at line 77 (2 lines) (fallback=False)
+2025-10-24 22:15:00,303 [INFO] Block 10/13: code-length=1
+2025-10-24 22:15:00,744 [INFO] Duplicate detected but FORCE enabled -> inserting anyway. Reason: single-line normalized exact
+2025-10-24 22:15:00,744 [INFO] Inserted block 10 at line 75 (1 lines) (fallback=False)
+2025-10-24 22:15:00,745 [INFO] Block 11/13: code-length=19
+2025-10-24 22:15:01,092 [INFO] Inserted block 11 at line 5732 (19 lines) (fallback=False)
+2025-10-24 22:15:01,092 [INFO] Block 12/13: code-length=2
+2025-10-24 22:15:01,523 [INFO] Inserted block 12 at line 5732 (2 lines) (fallback=False)
+2025-10-24 22:15:01,523 [INFO] Block 13/13: code-length=4
+2025-10-24 22:15:01,891 [INFO] Inserted block 13 at line 7762 (4 lines) (fallback=False)
+2025-10-24 22:15:01,895 [INFO] char_item.cpp updated: 13/13 blocks inserted.
+2025-10-24 22:15:01,896 [INFO] Done. Files processed: 1. Blocks total: 13. Inserted: 13.
