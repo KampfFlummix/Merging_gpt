@@ -1535,6 +1535,8 @@ void CHARACTER::__OpenPrivateShop()
 #endif
 }
 
+if (pItem)
+{
 // MYSHOP_PRICE_LIST
 void CHARACTER::SendMyShopPriceListCmd(DWORD dwItemVnum, DWORD dwItemPrice)
 {
@@ -1674,7 +1676,6 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 		return false;
 	}
 #endif
-}
 
 	// @fixme402 (IsLoadedAffect to block affect hacking)
 	if (!IsLoadedAffect())
@@ -1743,8 +1744,6 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 				return true;
 			}
 #endif
-}
-}
 
 			if (GetArena() != NULL || IsObserverMode() == true)
 			{
@@ -1923,8 +1922,6 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 				}
 				break;
 		#endif
-		}
-		}
 
 				case PET_EGG: //0
 				case PET_BAG: //2
@@ -2039,6 +2036,8 @@ bool CHARACTER::UseItemEx(LPITEM item, TItemPos DestCell)
 									ChatPacket(CHAT_TYPE_INFO, LC_TEXT("상자에서 나온 녹색 연기를 들이마시자 독이 온몸으로 퍼집니다!"));
 									break;
 #endif
+}
+}
 								case CSpecialItemGroup::MOB_GROUP:
 									ChatPacket(CHAT_TYPE_INFO, LC_TEXT("상자에서 몬스터가 나타났습니다!"));
 									break;
@@ -5667,6 +5666,10 @@ bool CHARACTER::DropCheque(int cheque)
 
 bool CHARACTER::MoveItem(TItemPos Cell, TItemPos DestCell, BYTE count)
 {
+    bool CHARACTER::IsEmptyItemGrid(TItemPos Cell, BYTE bSize, int iExceptionCell) const
+    {
+    void CHARACTER::SetItem(TItemPos Cell, LPITEM pItem)
+    {
 	if (Cell.IsSamePosition(DestCell)) // @fixme196 (check same slot n same window aliases)
 		return false;
 

@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Donor_Merger_GPT.py
-Robuster Donor->Original Merger für Metin2-Development.
-
-Layout-Erkennung:
-  1) Standard: sucht `donor/`, `original/`, `backup/` *neben* der Skriptdatei.
-  2) Fallback: `ZUTUN/donor`, `ZUTUN/original`, `ZUTUN/backup`.
-CLI-Optionen: --donor --orig --backup --file
+Donor_Merger_GPT.py - Überarbeitet (Robustere Block-Erkennung + Matching)
+Leg es neben: donor/ original/ backup  (oder benutze --donor/--orig/--backup)
 """
 from __future__ import annotations
 import os
@@ -23,57 +18,41 @@ from typing import List, Tuple, Optional
 # ----------------- Basis / Pfad -----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def resolve_dir_prefer_local(path: str) -> str:
-    """
-    Versucht Pfad (falls über CLI) zu resolven; ansonsten prüft:
-     1) ./donor, ./original, ./backup (neben script)
-     2) ./ZUTUN/donor, ...
-    Returns absolute path (may not exist).
-    """
-    # if user provided absolute/relative path, try to resolve it first
+def resolve_dir_prefer_local(path: Optional[str]) -> str:
     if path:
         cand = os.path.abspath(path)
         if os.path.isdir(cand):
             return cand
-        # relative to script dir
         rel = os.path.join(BASE_DIR, path)
         if os.path.isdir(rel):
             return os.path.abspath(rel)
-    return os.path.abspath(path) if path else ""
+        return cand
+    return ""
 
 def auto_detect_layout(donor_arg: Optional[str], orig_arg: Optional[str], backup_arg: Optional[str]):
-    """
-    Liefert (donor_dir, orig_dir, backup_dir) prioritizing:
-      A) explicit args (resolved)
-      B) local layout: BASE_DIR/donor , BASE_DIR/original , BASE_DIR/backup
-      C) fallback ZUTUN layout: BASE_DIR/ZUTUN/donor ...
-      D) returns absolute candidate paths (may not exist) if none found
-    """
-    # 1) explicit provided
+    # priority: explicit args > local ./donor > ./ZUTUN/donor
     if donor_arg or orig_arg or backup_arg:
-        donor_dir = resolve_dir_prefer_local(donor_arg or os.path.join("donor"))
-        orig_dir = resolve_dir_prefer_local(orig_arg or os.path.join("original"))
-        backup_dir = resolve_dir_prefer_local(backup_arg or os.path.join("backup"))
-        return donor_dir, orig_dir, backup_dir
+        d = resolve_dir_prefer_local(donor_arg or "donor")
+        o = resolve_dir_prefer_local(orig_arg or "original")
+        b = resolve_dir_prefer_local(backup_arg or "backup")
+        return d, o, b
 
-    # 2) local layout next to script
     local_d = os.path.join(BASE_DIR, "donor")
     local_o = os.path.join(BASE_DIR, "original")
     local_b = os.path.join(BASE_DIR, "backup")
     if os.path.isdir(local_d) and os.path.isdir(local_o):
         return local_d, local_o, local_b
 
-    # 3) fallback ZUTUN
     zutun_d = os.path.join(BASE_DIR, "ZUTUN", "donor")
     zutun_o = os.path.join(BASE_DIR, "ZUTUN", "original")
     zutun_b = os.path.join(BASE_DIR, "ZUTUN", "backup")
     if os.path.isdir(zutun_d) and os.path.isdir(zutun_o):
         return zutun_d, zutun_o, zutun_b
 
-    # 4) last-resort: use local candidates (even if absent)
+    # fallback to local candidates (may not exist)
     return local_d, local_o, local_b
 
-# ----------------- Defaults & Logging -----------------
+# ----------------- Logging -----------------
 LOGFILE = os.path.join(BASE_DIR, "merger_debug.log")
 os.makedirs(os.path.dirname(LOGFILE), exist_ok=True)
 logging.basicConfig(
@@ -84,8 +63,9 @@ logging.basicConfig(
 logger = logging.getLogger("DonorMerger")
 
 # ----------------- Config -----------------
-CONTEXT_LINES = 6
-FUZZY_THRESHOLD = 0.60
+CONTEXT_LINES = 8           # mehr Kontext sammeln hilft bei fragilen Donor-Blöcken
+BACKWARD_CODE_LINES = 8    # falls kein code after marker: take up to N lines before marker
+FUZZY_THRESHOLD = 0.55     # etwas großzügiger
 ENCODINGS_TRY = ["utf-8", "cp949", "euc-kr", "latin-1", "cp1252"]
 SUPPORTED_EXTS = (".cpp", ".c", ".h", ".hpp", ".txt")
 
@@ -162,7 +142,6 @@ def preserve_indentation(reference_line: Optional[str], code_block: List[str]) -
             indented.append(line)
             continue
         stripped = line.lstrip()
-        # keep preprocessor at column 0
         if stripped.startswith('#'):
             indented.append(stripped)
         else:
@@ -183,41 +162,60 @@ def adjust_for_preprocessor(original_lines: List[str], insert_idx: int) -> int:
         return max(insert_idx, last_open_idx + 1)
     return insert_idx
 
-# ----------------- Matching Algorithms -----------------
+# ----------------- Matching Algorithms (improved) -----------------
 def find_insert_position_improved(original_lines: List[str], context_before: List[str]) -> int:
     if not context_before:
         return -1
     search_context = [l for l in context_before if l.strip()]
-    search_context = search_context[-5:]
+    search_context = search_context[-6:]
     if not search_context:
         return -1
+    norm_orig = [normalize_for_search(l) for l in original_lines]
+    ctx_norm = [normalize_for_search(l) for l in search_context]
+
     best_pos = -1
     best_score = 0
-    norm_orig = [normalize_for_search(l) for l in original_lines]
-    for i in range(len(original_lines)):
+
+    # For each line in original, compute match score using nearby window
+    N = len(original_lines)
+    for i in range(N):
         score = 0
-        for j, ctx_line in enumerate(reversed(search_context)):
-            check_idx = i - j
+        # check up to len(ctx_norm) preceding lines aligning with search_context
+        for offset, ctx in enumerate(reversed(ctx_norm)):
+            check_idx = i - offset
             if check_idx < 0:
                 break
-            pat = build_flexible_regex_from_line(ctx_line)
+            pat = build_flexible_regex_from_line(ctx)
             if re.search(pat, original_lines[check_idx], flags=re.IGNORECASE):
-                score += 2
+                score += 3
             else:
-                if normalize_for_search(ctx_line) and normalize_for_search(ctx_line) in norm_orig[check_idx]:
+                # token-based partial match
+                if ctx and ctx in norm_orig[check_idx]:
                     score += 1
-        required = max(1, len(search_context) // 2)
-        if score >= required and score > best_score:
+                else:
+                    # try searching in a local window +/-2 lines
+                    window_hits = 0
+                    for w in range(max(0, check_idx-2), min(N, check_idx+3)):
+                        if ctx and ctx in norm_orig[w]:
+                            window_hits += 1
+                    score += min(window_hits, 2)
+        # penalize if lines too far apart (no continuous matching)
+        if score > best_score:
             best_score = score
             best_pos = i
-    if best_pos != -1:
+
+    # require minimal absolute score relative to context size
+    min_required = max(1, int(len(ctx_norm) * 1))  # stricter count but weighted earlier
+    if best_score >= min_required:
         return best_pos
-    ctx_join = " || ".join([normalize_for_search(l) for l in search_context])
-    for i in range(max(1, len(original_lines) - len(search_context) + 1)):
-        window = " || ".join([normalize_for_search(l) for l in original_lines[i:i + len(search_context)]])
+    # fuzzy window match over joined context
+    ctx_join = " || ".join(ctx_norm)
+    n = len(ctx_norm)
+    for i in range(max(0, len(original_lines) - n + 1)):
+        window = " || ".join([normalize_for_search(l) for l in original_lines[i:i+n]])
         ratio = difflib.SequenceMatcher(None, ctx_join, window).ratio()
         if ratio > FUZZY_THRESHOLD:
-            return i + len(search_context) - 1
+            return i + n - 1
     return -1
 
 def find_by_keyword_fallback(original_lines: List[str], code_block: List[str]) -> int:
@@ -225,30 +223,37 @@ def find_by_keyword_fallback(original_lines: List[str], code_block: List[str]) -
         return -1
     tokens = []
     for line in code_block:
-        line_stripped = strip_inline_comments(line).strip()
-        if not line_stripped:
+        s = strip_inline_comments(line).strip()
+        if not s:
             continue
-        m = re.match(r'\s*case\s+([A-Za-z0-9_]+)', line_stripped, flags=re.IGNORECASE)
+        m = re.match(r'\s*case\s+([A-Za-z0-9_]+)', s, flags=re.IGNORECASE)
         if m:
             tokens.append('case:' + m.group(1).lower())
-        for w in re.findall(r'[A-Za-z_][A-Za-z0-9_]{2,}', line_stripped):
+        for w in re.findall(r'[A-Za-z_][A-Za-z0-9_]{2,}', s):
             tokens.append(w.lower())
     if not tokens:
         return -1
     pos_scores = {}
+    norm_orig = [normalize_for_search(l) for l in original_lines]
     for i, orig_line in enumerate(original_lines):
-        low = normalize_for_search(orig_line)
+        low = norm_orig[i]
         score = 0
         for t in tokens:
             if t.startswith('case:'):
                 keyword = t.split(':', 1)[1]
                 if re.search(r'\bcase\s+' + re.escape(keyword) + r'\b', orig_line, flags=re.IGNORECASE):
-                    score += 3
+                    score += 4
             else:
                 if re.search(r'\b' + re.escape(t) + r'\b', low):
                     score += 1
         if score:
             pos_scores[i] = score
+    if not pos_scores:
+        # try weaker substring matching
+        for i, low in enumerate(norm_orig):
+            cnt = sum(1 for t in set(tokens) if t in low)
+            if cnt:
+                pos_scores[i] = cnt
     if not pos_scores:
         return -1
     best_idx, best_score = max(pos_scores.items(), key=lambda x: x[1])
@@ -256,7 +261,7 @@ def find_by_keyword_fallback(original_lines: List[str], code_block: List[str]) -
         return best_idx
     return -1
 
-# ----------------- Donor parsing -----------------
+# ----------------- Donor parsing (more formats) -----------------
 PLACEHOLDERS = [r'\[\.\]', r'\[\.\.\.\]', r'/\*\s*\[\.\]\s*\*/', r'/\*\s*\[\.\.\.\]\s*\*/', r'\.\.\.']
 PLACEHOLDER_RE = re.compile('|'.join(PLACEHOLDERS))
 
@@ -266,14 +271,16 @@ def parse_donor_blocks(text: str) -> List[Tuple[List[str], List[str]]]:
     i = 0
     while i < len(lines):
         if PLACEHOLDER_RE.search(lines[i]):
+            # context before
             ctx_start = max(0, i - CONTEXT_LINES)
             context_before = [lines[j] for j in range(ctx_start, i) if lines[j].strip() != ""]
             code_block: List[str] = []
-            k = i + 1
             # capture trailing content on same line after marker
             after = PLACEHOLDER_RE.sub('', lines[i]).strip()
             if after:
                 code_block.append(after)
+            # capture following non-empty lines as code (preferred)
+            k = i + 1
             while k < len(lines):
                 if lines[k].strip() == "":
                     break
@@ -281,6 +288,24 @@ def parse_donor_blocks(text: str) -> List[Tuple[List[str], List[str]]]:
                     break
                 code_block.append(lines[k])
                 k += 1
+            # if no code after marker, try to capture code **before** marker (backward)
+            if not code_block:
+                back_lines = []
+                b = i - 1
+                while b >= 0 and len(back_lines) < BACKWARD_CODE_LINES:
+                    if PLACEHOLDER_RE.search(lines[b]):
+                        break
+                    if lines[b].strip() == "":
+                        # stop at blank line
+                        break
+                    back_lines.append(lines[b])
+                    b -= 1
+                # we captured reversed order, restore normal order
+                back_lines.reverse()
+                # only take as code if we have at least 1 non-comment line resembling code
+                valid = [ln for ln in back_lines if ln.strip() and not ln.strip().startswith('//')]
+                if valid:
+                    code_block = back_lines
             blocks.append((context_before, code_block))
             i = k
         else:
@@ -288,6 +313,23 @@ def parse_donor_blocks(text: str) -> List[Tuple[List[str], List[str]]]:
     return blocks
 
 # ----------------- Merge core -----------------
+def already_exists_nearby(out_lines: List[str], insert_idx: int, code_block: List[str], window: int = 8) -> bool:
+    if not code_block:
+        return False
+    first_nonempty = None
+    for l in code_block:
+        if l.strip():
+            first_nonempty = l.strip()
+            break
+    if not first_nonempty:
+        return False
+    start = max(0, insert_idx - window)
+    end = min(len(out_lines), insert_idx + window)
+    for i in range(start, end):
+        if first_nonempty in out_lines[i]:
+            return True
+    return False
+
 def merge_one_file(donor_path: str, orig_path: str, backup_dir: str) -> Tuple[int, int]:
     logger.info(f"Verarbeite Donor: {donor_path} -> Original: {orig_path}")
     donor_text, _don_enc = try_read_file(donor_path)
@@ -321,9 +363,16 @@ def merge_one_file(donor_path: str, orig_path: str, backup_dir: str) -> Tuple[in
             pos = find_by_keyword_fallback(out_lines, code_block)
         if pos == -1:
             logger.warning("Keine passende Einfügestelle gefunden (Block wird übersprungen).")
+            # print small context in debug
+            if context_before:
+                logger.debug("Context before (last 3): %s", context_before[-3:])
             continue
         insert_idx = pos + 1
         insert_idx = adjust_for_preprocessor(out_lines, insert_idx)
+        # check if already exists nearby -> skip to avoid duplicate
+        if already_exists_nearby(out_lines, insert_idx, code_block, window=8):
+            logger.info("Code scheint bereits in der Nähe vorhanden -> übersprungen (vermeidet Duplikat).")
+            continue
         ref_line = out_lines[pos] if pos < len(out_lines) else ""
         indented_block = preserve_indentation(ref_line, code_block)
         for i, line in enumerate(indented_block):
